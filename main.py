@@ -2,6 +2,7 @@
 import numpy as np
 from Segment import Segment
 
+from Plane import Plane
 
 def update (v1, v2):
     v1[0] = v2[0]
@@ -23,5 +24,13 @@ update(v1, [-1,-1,-1])
 
 print(s.tostring())
 
+
+v3 = np.array([0,1,2])
+
+p = Plane()
+
+print(p.contains(v3))
+
+print(p.contains(v2))
 
 

@@ -4,8 +4,15 @@ import numpy as np
 class Edge(object) :
     
     def __init__(self, v1, v2):
-        self.v1 = v1
-        self.v2 = v2
+        self.setStartVertex(v1)
+        self.setEndVertex(v2)
+    
+    
+    def setStartVertex(self,vertex):
+        self.v1 = vertex
+        
+    def setEndVertex(self, vertex):
+        self.v2 = vertex
         
     def setNextEdge(self, nextEdge):
         self.next = nextEdge

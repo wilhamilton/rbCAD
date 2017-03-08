@@ -1,5 +1,6 @@
 
 import numpy as np
+from _overlapped import NULL
 
 class CoordinateSystem :
 
@@ -8,6 +9,9 @@ class CoordinateSystem :
         self.xAxis = np.array([1,0,0])
         self.yAxis = np.array([0,1,0])
         self.zAxis = np.array([0,0,1])
+        self.XY = NULL
+        self.YZ = NULL
+        self.XZ = NULL
         
     def rotate(self, rotationMatrix) :
         pass
