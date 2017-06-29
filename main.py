@@ -1,6 +1,6 @@
 
 import numpy as np
-from Segment import Segment
+from Line import Line
 
 from Plane import Plane
 
@@ -13,7 +13,7 @@ v1 = np.array([0,0,0])
 
 v2 = np.array([1,1,1])
 
-s = Segment(v1, v2)
+s = Line(v1, v2)
 
 print(s.tostring())
 
