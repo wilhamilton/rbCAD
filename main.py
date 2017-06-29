@@ -1,8 +1,8 @@
 
 import numpy as np
-from Line import Line
+from physical_geometry import Line
 
-from Plane import Plane
+from base_geometry import Plane
 
 def update (v1, v2):
     v1[0] = v2[0]
@@ -17,7 +17,7 @@ s = Line(v1, v2)
 
 print(s.tostring())
 
-print(s.onEdge(np.array([.5,.5,.5])))
+print(s.on_edge(np.array([.5,.5,.5])))
 
 
 update(v1, [-1,-1,-1])

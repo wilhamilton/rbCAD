@@ -3,7 +3,7 @@ A Line.
 
 A specific type of edge.
 """
-from Edge import Edge
+from physical_geometry import Edge
 
 
 class Line(Edge):
@@ -14,11 +14,11 @@ class Line(Edge):
         super(Line, self).__init__(v1, v2)
         self.slope = self.v2 - self.v1
 
-    def getPoint(self, t):
+    def get_point(self, t):
         """Calculate a (parametric) point on the line."""
         return self.v1 + t*self.slope
 
-    def onEdge(self, point):
+    def on_edge(self, point):
         """Calculate if the supplied point falls on the line."""
         temp = (point - self.v1) / self.slope
         if temp[0] == temp[1] and temp[1] == temp[2]:

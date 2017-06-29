@@ -1,6 +1,5 @@
 
 import numpy as np
-from _overlapped import NULL
 
 class CoordinateSystem :
 

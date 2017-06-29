@@ -4,30 +4,30 @@ import numpy as np
 class Edge(object) :
     
     def __init__(self, v1, v2):
-        self.setStartVertex(v1)
-        self.setEndVertex(v2)
+        self.set_start_vertex(v1)
+        self.set_end_vertex(v2)
     
     
-    def setStartVertex(self,vertex):
+    def set_start_vertex(self,vertex):
         self.v1 = vertex
         
-    def setEndVertex(self, vertex):
+    def set_end_vertex(self, vertex):
         self.v2 = vertex
         
-    def setNextEdge(self, nextEdge):
+    def set_next_edge(self, nextEdge):
         self.next = nextEdge
         
-    def setPreviousEdge(self, previousEdge):
+    def set_previous_edge(self, previousEdge):
         self.previousEdge = previousEdge
         
-    def setPartnerEdge(self, partnerEdge):
+    def set_partner_edge(self, partnerEdge):
         self.partnerEdge = partnerEdge
         
-    def getPoint(self, t):
+    def get_point(self, t):
         '''override'''
         return np.array([0,0,0])
     
-    def onEdge(self, point):
+    def on_edge(self, point):
         return False
     
     def __str__(self):
