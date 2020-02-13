@@ -32,7 +32,7 @@ from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakePipe
 
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere, BRepPrimAPI_MakeBox
 
-from OCC.Display.SimpleGui import init_display
+from Display.SimpleGui import init_display
 display, start_display, add_menu, add_function_to_menu = init_display()
 
 def make_wire_from_points(list_of_points):
