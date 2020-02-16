@@ -155,6 +155,25 @@ def init_display(backend_str=None,
                 # place the window in the center of the screen, at half the
                 # screen size
                 self.centerOnScreen()
+                # self.build_gui_items()
+
+            def build_gui_items(self):
+                clear_button = QtWidgets.QPushButton('Clear Display', self)
+                clear_button.setToolTip('Click to clear all items on the display.')
+                clear_button.move(20, size[1] - clear_button.height() - 20)
+                clear_button.clicked.connect(self.clear_button_click)
+
+                run_file_button = QtWidgets.QPushButton('Run File', self)
+                run_file_button.setToolTip('Load and run a file.')
+                run_file_button.move(40+clear_button.width(), size[1] - clear_button.height() - 20)
+                run_file_button.clicked.connect(self.run_file_button_click)
+
+            def clear_button_click(self):
+                print('button 1 pressed')
+                display.EraseAll()
+
+            def run_file_button_click(self):
+                print('load and run file')
 
             def centerOnScreen(self):
                 '''Centers the window on the screen.'''
@@ -185,12 +204,16 @@ def init_display(backend_str=None,
             app = QtWidgets.QApplication(sys.argv)
         win = MainWindow()
         win.resize(size[0] -1, size[1] -1)
-        win.show()
+        # win.show()
         win.centerOnScreen()
         win.canva.InitDriver()
         win.resize(size[0], size[1])
         win.canva.qApp = app
         display = win.canva._display
+
+        win.build_gui_items()
+
+        win.show()
 
         def add_menu(*args, **kwargs):
             win.add_menu(*args, **kwargs)
