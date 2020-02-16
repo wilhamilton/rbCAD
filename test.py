@@ -35,7 +35,7 @@ from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakePipe
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere, BRepPrimAPI_MakeBox
 
 from Display.SimpleGui import init_display
-display, start_display, add_menu, add_function_to_menu = init_display()
+display, start_display, add_menu, add_function_to_menu, win = init_display()
 
 def make_wire_from_points(list_of_points):
     points = []
@@ -82,6 +82,7 @@ def pipe():
     d = [-track_bed_top_width/2, 0, track_bed_height]
     
     wire1, edges, segments, points = make_wire_from_points([a, b, c, d])
+    display.DisplayShape(wire1.Wire(), update=True)
     # print(wire1)
     
     # the bspline path, must be a wire
@@ -136,6 +137,14 @@ if __name__ == '__main__':
     add_function_to_menu('primitives', clear_display)
     add_function_to_menu('primitives', display_sketches)
     
+    # win.hide()
+    # win.build_gui_items()
+    # win.show()
+
+    win.set_run_file("test_model.py")
+
+    loaded_file = "test.py"
+
     print(display)
-    pipe()
+    # pipe()
     start_display()

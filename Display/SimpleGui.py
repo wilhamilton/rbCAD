@@ -158,6 +158,7 @@ def init_display(backend_str=None,
                 # self.build_gui_items()
 
             def build_gui_items(self):
+                print('build gui items')
                 clear_button = QtWidgets.QPushButton('Clear Display', self)
                 clear_button.setToolTip('Click to clear all items on the display.')
                 clear_button.move(20, size[1] - clear_button.height() - 20)
@@ -168,12 +169,32 @@ def init_display(backend_str=None,
                 run_file_button.move(40+clear_button.width(), size[1] - clear_button.height() - 20)
                 run_file_button.clicked.connect(self.run_file_button_click)
 
+                view_reset_button = QtWidgets.QPushButton('Reset View', self)
+                view_reset_button.setToolTip('Click to reset model view.')
+                view_reset_button.move(run_file_button.x()+run_file_button.width()+20, size[1] - clear_button.height() - 20)
+                view_reset_button.clicked.connect(self.view_reset_button_click)
+
             def clear_button_click(self):
                 print('button 1 pressed')
                 display.EraseAll()
 
             def run_file_button_click(self):
                 print('load and run file')
+                print(self.run_file)
+                exec(open(self.run_file).read(), globals())
+
+                for temp_wire in display_wires:
+                    display.DisplayShape(temp_wire, update=True)
+
+                for temp_shape in display_shapes:
+                    display.DisplayShape(temp_shape, update=True)
+
+            def view_reset_button_click(self):
+                display.ResetView()
+                display.FitAll()
+
+            def set_run_file(self, file):
+                self.run_file = file
 
             def centerOnScreen(self):
                 '''Centers the window on the screen.'''
@@ -197,7 +218,7 @@ def init_display(backend_str=None,
                     self._menus[menu_name].addAction(_action)
                 except KeyError:
                     raise ValueError('the menu item %s does not exist' % menu_name)
-
+            
         # following couple of lines is a tweak to enable ipython --gui='qt'
         app = QtWidgets.QApplication.instance()  # checks if QApplication already exists
         if not app:  # create QApplication if it doesnt exist
@@ -232,7 +253,7 @@ def init_display(backend_str=None,
     # background gradient
         display.set_bg_gradient_color(background_gradient_color1, background_gradient_color2)
 
-    return display, start_display, add_menu, add_function_to_menu
+    return display, start_display, add_menu, add_function_to_menu, win
 
 
 if __name__ == '__main__':
