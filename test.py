@@ -25,14 +25,16 @@ import logging
 import os
 import sys
 
-from OCC.Core.gp import gp_Pnt
-from OCC.Core.GC import GC_MakeArcOfCircle, GC_MakeSegment
-from OCC.Core.GeomAPI import GeomAPI_PointsToBSpline
-from OCC.Core.TColgp import TColgp_Array1OfPnt
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
-from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakePipe
+# from OCC.Core.gp import gp_Pnt
+# from OCC.Core.GC import GC_MakeArcOfCircle, GC_MakeSegment
+# from OCC.Core.GeomAPI import GeomAPI_PointsToBSpline
+# from OCC.Core.TColgp import TColgp_Array1OfPnt
+# from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
+# from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakePipe
 
-from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere, BRepPrimAPI_MakeBox
+# from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere, BRepPrimAPI_MakeBox
+
+from PyQt5.QtWidgets import QFileDialog
 
 from Display.SimpleGui import init_display
 display, start_display, add_menu, add_function_to_menu, win = init_display()
@@ -127,23 +129,27 @@ if __name__ == '__main__':
         pipe()
         # display.DisplayShape(wire1.Wire(), update=True)
 
-    def quit(event=None):
+    def Quit(event=None):
         sys.exit()
 
-    add_menu('primitives')
-    add_function_to_menu('primitives', sphere)
-    add_function_to_menu('primitives', cube)
-    add_function_to_menu('primitives', quit)
-    add_function_to_menu('primitives', clear_display)
-    add_function_to_menu('primitives', display_sketches)
+    def Load_File(event=None):
+        file_name, _ = QFileDialog.getOpenFileName(win,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)")
+        if(file_name):
+            print(file_name)
+            win.set_run_file(file_name)
+            win.execute_file()
+
+    add_menu('File')
+    add_function_to_menu('File', Load_File)
+    # add_function_to_menu('primitives', cube)
+    add_function_to_menu('File', Quit)
+    # add_function_to_menu('primitives', clear_display)
+    # add_function_to_menu('primitives', display_sketches)
     
     # win.hide()
     # win.build_gui_items()
     # win.show()
 
-    win.set_run_file("test_model.py")
-
-    loaded_file = "test.py"
 
     print(display)
     # pipe()

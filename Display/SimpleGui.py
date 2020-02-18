@@ -181,7 +181,14 @@ def init_display(backend_str=None,
             def run_file_button_click(self):
                 print('load and run file')
                 print(self.run_file)
-                exec(open(self.run_file).read(), globals())
+                self.execute_file()
+
+
+            def execute_file(self):
+                try:
+                    exec(open(self.run_file).read(), globals())
+                except:
+                    print('code failed')
 
                 for temp_wire in display_wires:
                     display.DisplayShape(temp_wire, update=True)
