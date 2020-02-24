@@ -42,7 +42,27 @@ def make_wire_from_points(list_of_points):
     
     return wire_builder, edges, segments, points
 
+class Sketch:
+    def __init__(self, name):
+        self.name = name
+        self.points = []
+        self.segments = []
+        self.edges = []
+        self.wires = []
 
+    def add_wire(self, wire):
+        self.wires.append(wire)
+
+    def move_sketch(self, transform):
+        print('Move the sketch by transform')
+
+class Feature:
+    def __init__(self, name):
+        self.name = name
+        self.sketch = None
+
+    def add_sketch(self, sketch):
+        self.sketch = sketch
 
 track_bed_width = 16
 track_bed_top_width = 11
