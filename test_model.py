@@ -1,13 +1,13 @@
 
 
-from OCC.Core.gp import gp_Pnt
+from OCC.Core.gp import gp_Pnt, gp_Dir, gp_Vec
 from OCC.Core.GC import GC_MakeArcOfCircle, GC_MakeSegment
 from OCC.Core.GeomAPI import GeomAPI_PointsToBSpline
 from OCC.Core.TColgp import TColgp_Array1OfPnt
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire, BRepBuilderAPI_MakeFace
 from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakePipe
 
-from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere, BRepPrimAPI_MakeBox
+from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere, BRepPrimAPI_MakeBox, BRepPrimAPI_MakePrism, BRepPrimAPI_MakeRevol
 
 
 display_wires = []
@@ -43,6 +43,7 @@ def make_wire_from_points(list_of_points):
     return wire_builder, edges, segments, points
 
 class Sketch:
+
     def __init__(self, name):
         self.name = name
         self.points = []
@@ -72,15 +73,59 @@ class Sketch:
 
     def print_points(self):
         for pnt in self.points:
-            print(pnt)
+            print(pnt.Coord())
+
+    def make_segments_from_points(self):
+        for i in range(len(self.points)):
+            #print(str(i) + ": making segment between")
+            # print(len(points))
+            if(i == len(self.points)-1):
+                self.segments.append(GC_MakeSegment(self.points[i], self.points[0]))
+            else:
+                self.segments.append(GC_MakeSegment(self.points[i], self.points[i+1]))
+
+    def make_edges_from_segments(self):
+        for segment in self.segments:
+            new_edge = BRepBuilderAPI_MakeEdge(segment.Value())
+            self.edges.append(new_edge)
+
+    def make_wire_from_edges(self):
+        wire_builder = BRepBuilderAPI_MakeWire()
+        
+        for edge in self.edges:
+            wire_builder.Add(edge.Edge())
+
+        self.wires.append(wire_builder.Wire())
+
+    def make_wire_from_points(self, points):
+        self.add_points(points)
+        self.make_segments_from_points()
+        self.make_edges_from_segments()
+        self.make_wire_from_edges()
 
 class Feature:
     def __init__(self, name):
         self.name = name
-        self.sketch = None
+        self.profile_sketch = None
+        self.profile_face = None
+        self.solid = None
 
-    def add_sketch(self, sketch):
-        self.sketch = sketch
+    def add_profile_sketch(self, sketch):
+        self.profile_sketch = sketch
+        self.profile_face = BRepBuilderAPI_MakeFace(self.profile_sketch.wires[0])
+
+    def extrude_profile(self, extrude_vector):
+        if (type(extrude_vector) is list):
+            # vector = gp_Dir(extrude_vector)
+            vector = gp_Vec(extrude_vector[0], extrude_vector[1], extrude_vector[2])
+            print(vector.Coord())
+        
+        self.solid = BRepPrimAPI_MakePrism(self.profile_face.Face(), vector)
+        print(self.solid)
+
+    # def revolve_profile(self, revolve_axis, angle):
+
+    # def sweep_profile(self, path_sketch):
 
 track_bed_width = 16
 track_bed_top_width = 11
@@ -96,12 +141,17 @@ d = [-track_bed_top_width/2, 0, track_bed_height]
 
 tb_sketch = Sketch("tb")
 
-tb_sketch.add_points([a, b, c, d])
+tb_sketch.make_wire_from_points([a, b, c, d])
 
 tb_sketch.print_points()
 
-wire1, edges, segments, points = make_wire_from_points([a, b, c, d])
+track = Feature('track')
 
+track.add_profile_sketch(tb_sketch)
+track.extrude_profile([0, 10, 0])
 
-# display.DisplayShape(wire1.Wire(), update=True)
-display_wires.append(wire1.Wire())
+# wire1, edges, seg
+
+# display.DisplayShape(track.solid.Shape(), update=True)
+display_wires.append(tb_sketch.wires[0])
+display_shapes.append(track.solid.Shape())

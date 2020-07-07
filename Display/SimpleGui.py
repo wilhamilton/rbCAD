@@ -189,6 +189,7 @@ def init_display(backend_str=None,
                         display.DisplayShape(temp_wire, update=True)
 
                     for temp_shape in display_shapes:
+                        print(temp_shape)
                         display.DisplayShape(temp_shape, update=True)
                 except:
                     print('code failed')
