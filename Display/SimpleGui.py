@@ -20,12 +20,50 @@
 import logging
 import os
 import sys
+import traceback
 
 from OCC import VERSION
 from Display.backend import load_backend, get_qt_modules
 from Display.OCCViewer import OffscreenRenderer
 
+# import any CAD related libraries here
+from OCC.Core.gp import gp_Pnt
+from OCC.Core.GC import GC_MakeArcOfCircle, GC_MakeSegment
+from OCC.Core.GeomAPI import GeomAPI_PointsToBSpline
+from OCC.Core.TColgp import TColgp_Array1OfPnt
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge, BRepBuilderAPI_MakeWire
+from OCC.Core.BRepOffsetAPI import BRepOffsetAPI_MakePipe
+
+from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere, BRepPrimAPI_MakeBox
+
+
+
+
 log = logging.getLogger(__name__)
+
+
+# https://stackoverflow.com/questions/28836078/how-to-get-the-line-number-of-an-error-from-exec-or-execfile-in-python
+class InterpreterError(Exception): pass
+
+def my_exec(cmd, globals=None, locals=None, description='source string'):
+    try:
+        exec(cmd, globals, locals)
+    except SyntaxError as err:
+        print('Syntax error in file.')
+        error_class = err.__class__.__name__
+        detail = err.args[0]
+        line_number = err.lineno
+        print("%s at line %d of %s: %s" % (error_class, line_number, description, detail))
+    except Exception as err:
+        print('Exception during file execution.')
+        error_class = err.__class__.__name__
+        detail = err.args[0]
+        cl, exc, tb = sys.exc_info()
+        line_number = traceback.extract_tb(tb)[-1][1]
+        print("%s at line %d of %s: %s" % (error_class, line_number, description, detail))
+    else:
+        return
+    raise InterpreterError("%s at line %d of %s: %s" % (error_class, line_number, description, detail))
 
 
 def check_callable(_callable):
@@ -76,59 +114,12 @@ def init_display(backend_str=None,
 
         # returns empty classes and functions
         return offscreen_renderer, do_nothing, do_nothing, call_function
+        
     used_backend = load_backend(backend_str)
     log.info("GUI backend set to: %s", used_backend)
-    # wxPython based simple GUI
-    if used_backend == 'wx':
-        import wx
-        from Display.wxDisplay import wxViewer3d
-
-        class AppFrame(wx.Frame):
-
-            def __init__(self, parent):
-                wx.Frame.__init__(self, parent, -1, "pythonOCC-%s 3d viewer ('wx' backend)" % VERSION,
-                                  style=wx.DEFAULT_FRAME_STYLE, size=size)
-                self.canva = wxViewer3d(self)
-                self.menuBar = wx.MenuBar()
-                self._menus = {}
-                self._menu_methods = {}
-
-            def add_menu(self, menu_name):
-                _menu = wx.Menu()
-                self.menuBar.Append(_menu, "&" + menu_name)
-                self.SetMenuBar(self.menuBar)
-                self._menus[menu_name] = _menu
-
-            def add_function_to_menu(self, menu_name, _callable):
-                # point on curve
-                _id = wx.NewId()
-                check_callable(_callable)
-                try:
-                    self._menus[menu_name].Append(_id,
-                                                  _callable.__name__.replace('_', ' ').lower())
-                except KeyError:
-                    raise ValueError('the menu item %s does not exist' % menu_name)
-                self.Bind(wx.EVT_MENU, _callable, id=_id)
-
-        app = wx.App(False)
-        win = AppFrame(None)
-        win.Show(True)
-        wx.SafeYield()
-        win.canva.InitDriver()
-        app.SetTopWindow(win)
-        display = win.canva._display
-
-        def add_menu(*args, **kwargs):
-            win.add_menu(*args, **kwargs)
-
-        def add_function_to_menu(*args, **kwargs):
-            win.add_function_to_menu(*args, **kwargs)
-
-        def start_display():
-            app.MainLoop()
 
     # Qt based simple GUI
-    elif 'qt' in used_backend:
+    if 'qt' in used_backend:
         from Display.qtDisplay import qtViewer3d
         QtCore, QtGui, QtWidgets, QtOpenGL = get_qt_modules()
 
@@ -155,6 +146,8 @@ def init_display(backend_str=None,
                 # place the window in the center of the screen, at half the
                 # screen size
                 self.centerOnScreen()
+                self.run_file = None
+                self.statusBar().showMessage("No File Loaded")
                 # self.build_gui_items()
 
             def build_gui_items(self):
@@ -175,26 +168,34 @@ def init_display(backend_str=None,
                 view_reset_button.clicked.connect(self.view_reset_button_click)
 
             def clear_button_click(self):
-                print('button 1 pressed')
+                print('Clearing Screen')
                 display.EraseAll()
+                display.display_triedron()
 
             def run_file_button_click(self):
                 print('load and run file')
                 print(self.run_file)
-                self.execute_file()
-
+                display.display_triedron()
+                if(self.run_file is not None):
+                    self.execute_file()
 
             def execute_file(self):
+
+                # print(lcl_dict)
                 try:
-                    exec(open(self.run_file).read(), globals())
+                    my_exec(open(self.run_file).read(), globals())
+
+                    for temp_wire in display_wires:
+                        display.DisplayShape(temp_wire, update=True)
+
+                    for temp_shape in display_shapes:
+                        display.DisplayShape(temp_shape, update=True)
                 except:
                     print('code failed')
 
-                for temp_wire in display_wires:
-                    display.DisplayShape(temp_wire, update=True)
+                # print(lcl_dict)
+                
 
-                for temp_shape in display_shapes:
-                    display.DisplayShape(temp_shape, update=True)
 
             def view_reset_button_click(self):
                 display.ResetView()
@@ -254,6 +255,7 @@ def init_display(backend_str=None,
             app.exec_()
 
     if display_triedron:
+        print("displaying triedron")
         display.display_triedron()
 
     if background_gradient_color1 and background_gradient_color2:

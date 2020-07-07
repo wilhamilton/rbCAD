@@ -49,12 +49,30 @@ class Sketch:
         self.segments = []
         self.edges = []
         self.wires = []
+        self.meta = {}
 
     def add_wire(self, wire):
         self.wires.append(wire)
 
     def move_sketch(self, transform):
         print('Move the sketch by transform')
+
+    def add_meta(self, key, value):
+        self.meta[key] = value
+
+    def add_point(self, point):
+        if (type(point) == list):
+            point = gp_Pnt(point[0], point[1], point[2])
+
+        self.points.append(point)
+
+    def add_points(self, points):
+        for pnt in points:
+            self.add_point(pnt)
+
+    def print_points(self):
+        for pnt in self.points:
+            print(pnt)
 
 class Feature:
     def __init__(self, name):
@@ -75,6 +93,12 @@ a = [-track_bed_width/2, 0, 0]
 b = [track_bed_width/2, 0, 0]
 c = [track_bed_top_width/2, 0, track_bed_height]
 d = [-track_bed_top_width/2, 0, track_bed_height]
+
+tb_sketch = Sketch("tb")
+
+tb_sketch.add_points([a, b, c, d])
+
+tb_sketch.print_points()
 
 wire1, edges, segments, points = make_wire_from_points([a, b, c, d])
 
