@@ -34,8 +34,6 @@ import sys
 
 # from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere, BRepPrimAPI_MakeBox
 
-from PyQt5.QtWidgets import QFileDialog
-
 from Display.SimpleGui import init_display
 display, start_display, add_menu, add_function_to_menu, win = init_display()
 
@@ -115,42 +113,6 @@ display, start_display, add_menu, add_function_to_menu, win = init_display()
 #     display.DisplayShape(wire1.Wire(), update=True)
 
 if __name__ == '__main__':
-
-    # def sphere(event=None):
-    #     display.DisplayShape(BRepPrimAPI_MakeSphere(100).Shape(), update=True)
-
-    # def cube(event=None):
-    #     display.DisplayShape(BRepPrimAPI_MakeBox(1, 1, 1).Shape(), update=True)
-        
-    # def clear_display(event=None):
-    #     display.EraseAll()
-        
-    # def display_sketches(event=None):
-    #     pipe()
-    #     # display.DisplayShape(wire1.Wire(), update=True)
-
-    def Quit(event=None):
-        sys.exit()
-
-    def Load_File(event=None):
-        file_name, _ = QFileDialog.getOpenFileName(win,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)")
-        if(file_name):
-            print(file_name)
-            win.set_run_file(file_name)
-            win.statusBar().showMessage(file_name)
-            win.execute_file()
-
-    add_menu('File')
-    add_function_to_menu('File', Load_File)
-    # add_function_to_menu('primitives', cube)
-    add_function_to_menu('File', Quit)
-    # add_function_to_menu('primitives', clear_display)
-    # add_function_to_menu('primitives', display_sketches)
-    
-    # win.hide()
-    # win.build_gui_items()
-    # win.show()
-
 
     print(display)
     # pipe()

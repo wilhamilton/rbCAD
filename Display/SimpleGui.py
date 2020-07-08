@@ -26,6 +26,9 @@ from OCC import VERSION
 from Display.backend import load_backend, get_qt_modules
 from Display.OCCViewer import OffscreenRenderer
 
+from PyQt5.QtWidgets import QWidget, QFileDialog, QHBoxLayout, QVBoxLayout, QDockWidget
+from PyQt5.QtCore import Qt
+
 # import any CAD related libraries here
 from OCC.Core.gp import gp_Pnt
 from OCC.Core.GC import GC_MakeArcOfCircle, GC_MakeSegment
@@ -73,7 +76,6 @@ def check_callable(_callable):
 
 def init_display(backend_str=None,
                  size=(1024, 768),
-                 display_triedron=True,
                  background_gradient_color1=[206, 215, 222],
                  background_gradient_color2=[128, 128, 128]):
     """ This function loads and initialize a GUI using either wx, pyq4, pyqt5 or pyside.
@@ -154,18 +156,39 @@ def init_display(backend_str=None,
                 print('build gui items')
                 clear_button = QtWidgets.QPushButton('Clear Display', self)
                 clear_button.setToolTip('Click to clear all items on the display.')
-                clear_button.move(20, size[1] - clear_button.height() - 20)
+                # clear_button.move(20, size[1] - clear_button.height() - 20)
                 clear_button.clicked.connect(self.clear_button_click)
 
                 run_file_button = QtWidgets.QPushButton('Run File', self)
                 run_file_button.setToolTip('Load and run a file.')
-                run_file_button.move(40+clear_button.width(), size[1] - clear_button.height() - 20)
+                # run_file_button.move(40+clear_button.width(), size[1] - clear_button.height() - 20)
                 run_file_button.clicked.connect(self.run_file_button_click)
 
                 view_reset_button = QtWidgets.QPushButton('Reset View', self)
                 view_reset_button.setToolTip('Click to reset model view.')
-                view_reset_button.move(run_file_button.x()+run_file_button.width()+20, size[1] - clear_button.height() - 20)
+                # view_reset_button.move(run_file_button.x()+run_file_button.width()+20, size[1] - clear_button.height() - 20)
                 view_reset_button.clicked.connect(self.view_reset_button_click)
+
+                toolbar_container = QWidget()
+
+                gui_hbox = QHBoxLayout()
+                gui_hbox.addWidget(clear_button)
+                gui_hbox.addWidget(run_file_button)
+                gui_hbox.addWidget(view_reset_button)
+
+                gui_vbox = QVBoxLayout()
+                gui_vbox.addStretch(1)
+                gui_vbox.addLayout(gui_hbox)
+
+                toolbar_container.setLayout(gui_vbox)
+
+                toolbar = QDockWidget()
+                toolbar.setWidget(toolbar_container)
+                toolbar.setFeatures(QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetMovable)
+
+                self.addDockWidget(Qt.BottomDockWidgetArea, toolbar)
+
+
 
             def clear_button_click(self):
                 print('Clearing Screen')
@@ -175,12 +198,10 @@ def init_display(backend_str=None,
             def run_file_button_click(self):
                 print('load and run file')
                 print(self.run_file)
-                display.display_triedron()
                 if(self.run_file is not None):
                     self.execute_file()
 
             def execute_file(self):
-
                 # print(lcl_dict)
                 try:
                     my_exec(open(self.run_file).read(), globals())
@@ -245,6 +266,23 @@ def init_display(backend_str=None,
 
         win.show()
 
+        
+        def Quit(event=None):
+            sys.exit()
+
+        def Load_File(event=None):
+            file_name, _ = QFileDialog.getOpenFileName(win,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)")
+            if(file_name):
+                print(file_name)
+                win.set_run_file(file_name)
+                win.statusBar().showMessage(file_name)
+                win.execute_file()
+
+        win.add_menu('File')
+        win.add_function_to_menu('File', Load_File)
+
+        win.add_function_to_menu('File', Quit)
+
         def add_menu(*args, **kwargs):
             win.add_menu(*args, **kwargs)
 
@@ -255,9 +293,7 @@ def init_display(backend_str=None,
             win.raise_()  # make the application float to the top
             app.exec_()
 
-    if display_triedron:
-        print("displaying triedron")
-        display.display_triedron()
+    display.display_triedron()
 
     if background_gradient_color1 and background_gradient_color2:
     # background gradient
