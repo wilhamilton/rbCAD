@@ -192,8 +192,10 @@ def init_display(backend_str=None,
 
             def clear_button_click(self):
                 print('Clearing Screen')
+                display.hide_triedron()
                 display.EraseAll()
                 display.display_triedron()
+                display.Repaint()
 
             def run_file_button_click(self):
                 print('load and run file')
