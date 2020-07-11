@@ -169,12 +169,18 @@ def init_display(backend_str=None,
                 # view_reset_button.move(run_file_button.x()+run_file_button.width()+20, size[1] - clear_button.height() - 20)
                 view_reset_button.clicked.connect(self.view_reset_button_click)
 
+                view_select_button = QtWidgets.QPushButton('View Select', self)
+                view_select_button.setToolTip('Click to select view')
+                view_select_button.clicked.connect(self.view_select_button_click)
+
+
                 toolbar_container = QWidget()
 
                 gui_hbox = QHBoxLayout()
                 gui_hbox.addWidget(clear_button)
                 gui_hbox.addWidget(run_file_button)
                 gui_hbox.addWidget(view_reset_button)
+                gui_hbox.addWidget(view_select_button)
 
                 gui_vbox = QVBoxLayout()
                 gui_vbox.addStretch(1)
@@ -186,9 +192,43 @@ def init_display(backend_str=None,
                 toolbar.setWidget(toolbar_container)
                 toolbar.setFeatures(QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetMovable)
 
+                feature_list_container = QWidget()
+
+                views_container = QWidget()
+
+                
+                views = ['top', 'front', 'left', 'right', 'bottom', 'back', 'iso']
+                view_select_layout = QVBoxLayout()
+
+                view_select_buttons = {}
+
+                for view in views:
+                    view_select_buttons[view] = QtWidgets.QPushButton(view.capitalize())
+                    # view_select_buttons[view].
+                    view_select_buttons[view].clicked.connect(lambda state, x=view: self.view_select_handler(x))
+                    view_select_layout.addWidget(view_select_buttons[view])
+
+                views_container.setLayout(view_select_layout)
+
+                self.views_select_window = QDockWidget()
+                self.views_select_window.setWidget(views_container)
+
+                self.addDockWidget(Qt.RightDockWidgetArea, self.views_select_window)
+                self.views_select_window.setFloating(True)
+                self.views_select_window.hide()
                 self.addDockWidget(Qt.BottomDockWidgetArea, toolbar)
 
+            def view_select_handler(self, view):
+                print("view handler")
+                view_functions = {"top": display.View_Top, "front": display.View_Front, "left": display.View_Left, "right": display.View_Right, "back": display.View_Rear, "bottom": display.View_Bottom, 'iso': display.View_Iso}
+                view_functions[view]()
+                self.views_select_window.hide()
+                display.FitAll()
 
+            
+            def view_select_button_click(self):
+                # print(self.views_select_window.isHidden())
+                self.views_select_window.show()
 
             def clear_button_click(self):
                 print('Clearing Screen')
