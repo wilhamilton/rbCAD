@@ -10,7 +10,7 @@ The software, as of v0.1 is not much more than a few functions built on top of P
 
 # Roadmap
 A short list of features I am kicking around:
-- GUI: View Cube (similar to SolidWorks, Inventor, Fusion360, etc.)
+- ~~GUI: View Cube (similar to SolidWorks, Inventor, Fusion360, etc.)~~
 - GUI: Show "feature" tree
 - GUI: toggle views on/off
 - Sketches: Create objecct to store points/edges/etc. before converting to wires
