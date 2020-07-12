@@ -192,8 +192,26 @@ def init_display(backend_str=None,
                 toolbar.setWidget(toolbar_container)
                 toolbar.setFeatures(QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetMovable)
 
-                feature_list_container = QWidget()
+                self.addDockWidget(Qt.BottomDockWidgetArea, toolbar)
 
+                # build the feature tree dock
+                feature_list_container = QWidget()
+                self.feature_list = QtWidgets.QTreeWidget()
+
+                feature_list_layout = QVBoxLayout()
+                feature_list_layout.addWidget(self.feature_list)
+
+                feature_list_container.setLayout(feature_list_layout)
+
+                feature_list_dock = QDockWidget()
+                feature_list_dock.setWidget(feature_list_container)
+                feature_list_dock.setWindowTitle("Feature Tree")
+                feature_list_dock.setFeatures(QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetMovable)
+
+                self.addDockWidget(Qt.LeftDockWidgetArea, feature_list_dock)
+
+
+                # build the views dialog
                 views_container = QWidget()
 
                 
@@ -212,11 +230,12 @@ def init_display(backend_str=None,
 
                 self.views_select_window = QDockWidget()
                 self.views_select_window.setWidget(views_container)
+                self.views_select_window.setWindowTitle("Select View")
 
                 self.addDockWidget(Qt.RightDockWidgetArea, self.views_select_window)
                 self.views_select_window.setFloating(True)
                 self.views_select_window.hide()
-                self.addDockWidget(Qt.BottomDockWidgetArea, toolbar)
+                
 
             def view_select_handler(self, view):
                 print("view handler")
@@ -245,15 +264,24 @@ def init_display(backend_str=None,
 
             def execute_file(self):
                 # print(lcl_dict)
+                sketch_list_header = QtWidgets.QTreeWidgetItem(self.feature_list)
+                sketch_list_header.setText(0, "Sketches")
+                feature_list_header = QtWidgets.QTreeWidgetItem(self.feature_list)
+                feature_list_header.setText(0, "Features")
                 try:
                     my_exec(open(self.run_file).read(), globals())
-
-                    for temp_wire in display_wires:
-                        display.DisplayShape(temp_wire, update=True)
-
-                    for temp_shape in display_shapes:
-                        print(temp_shape)
-                        display.DisplayShape(temp_shape, update=True)
+                    
+                    
+                    for sketch in sketches:
+                        for wire in sketch.wires:
+                            display.DisplayShape(wire.Wire(), update=True)
+                            sketch_list_item = QtWidgets.QTreeWidgetItem(sketch_list_header)
+                            sketch_list_item.setText(0, sketch.name)
+                            
+                    for feature in features:
+                        display.DisplayShape(feature.solid.Shape(), update=True)
+                        feature_list_item = QtWidgets.QTreeWidgetItem(feature_list_header)
+                        feature_list_item.setText(0, feature.name)
                 except:
                     print('code failed')
 

@@ -13,6 +13,9 @@ from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere, BRepPrimAPI_MakeBox, BR
 display_wires = []
 display_shapes = []
 
+sketches = []
+features = []
+
 def make_wire_from_points(list_of_points):
     points = []
     segments = []
@@ -95,7 +98,7 @@ class Sketch:
         for edge in self.edges:
             wire_builder.Add(edge.Edge())
 
-        self.wires.append(wire_builder.Wire())
+        self.wires.append(wire_builder)
 
     def make_wire_from_points(self, points):
         self.add_points(points)
@@ -112,7 +115,7 @@ class Feature:
 
     def add_profile_sketch(self, sketch):
         self.profile_sketch = sketch
-        self.profile_face = BRepBuilderAPI_MakeFace(self.profile_sketch.wires[0])
+        self.profile_face = BRepBuilderAPI_MakeFace(self.profile_sketch.wires[0].Wire())
 
     def extrude_profile(self, extrude_vector):
         if (type(extrude_vector) is list):
@@ -153,5 +156,8 @@ track.extrude_profile([0, 10, 0])
 # wire1, edges, seg
 
 # display.DisplayShape(track.solid.Shape(), update=True)
-display_wires.append(tb_sketch.wires[0])
-display_shapes.append(track.solid.Shape())
+# display_wires.append(tb_sketch.wires[0])
+# display_shapes.append(track.solid.Shape())
+
+sketches.append(tb_sketch)
+features.append(track)
