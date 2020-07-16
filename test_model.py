@@ -1,6 +1,6 @@
 
 
-from OCC.Core.gp import gp_Pnt, gp_Dir, gp_Vec
+from OCC.Core.gp import gp_Pnt, gp_Dir, gp_Vec, gp_Ax1
 from OCC.Core.GC import GC_MakeArcOfCircle, GC_MakeSegment
 from OCC.Core.GeomAPI import GeomAPI_PointsToBSpline
 from OCC.Core.TColgp import TColgp_Array1OfPnt
@@ -126,7 +126,14 @@ class Feature:
         self.solid = BRepPrimAPI_MakePrism(self.profile_face.Face(), vector)
         print(self.solid)
 
-    # def revolve_profile(self, revolve_axis, angle):
+    def revolve_profile(self, revolve_axis, angle = 360):
+        self.revolve_axis = revolve_axis
+        self.revolve_angle = 3.14159*2
+
+        print(self.revolve_axis)
+        print(self.revolve_angle)
+
+        self.solid  = BRepPrimAPI_MakeRevol(self.profile_face.Face(), self.revolve_axis, self.revolve_angle, False)
 
     # def sweep_profile(self, path_sketch):
 
@@ -151,7 +158,17 @@ tb_sketch.print_points()
 track = Feature('track')
 
 track.add_profile_sketch(tb_sketch)
-track.extrude_profile([0, 10, 0])
+# track.extrude_profile([0, 10, 0])
+
+def build_axis(base_point, direction):
+    base_point = gp_Pnt(base_point[0], base_point[1], base_point[2])
+    direction = gp_Dir(direction[0], direction[1], direction[2])
+
+    return gp_Ax1(base_point, direction)
+
+rev_axis = build_axis([50, 0, 0], [0, 0, 1])
+print(rev_axis)
+track.revolve_profile(rev_axis)
 
 # wire1, edges, seg
 

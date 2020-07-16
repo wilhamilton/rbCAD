@@ -197,6 +197,7 @@ def init_display(backend_str=None,
                 # build the feature tree dock
                 feature_list_container = QWidget()
                 self.feature_list = QtWidgets.QTreeWidget()
+                self.feature_list.setHeaderHidden(True)
 
                 feature_list_layout = QVBoxLayout()
                 feature_list_layout.addWidget(self.feature_list)
@@ -263,15 +264,17 @@ def init_display(backend_str=None,
                     self.execute_file()
 
             def execute_file(self):
-                # print(lcl_dict)
+                
+                self.feature_list.clear()
                 sketch_list_header = QtWidgets.QTreeWidgetItem(self.feature_list)
                 sketch_list_header.setText(0, "Sketches")
+                # sketch_list_header.setCheckState(0, QtCore.Qt.Checked)
                 feature_list_header = QtWidgets.QTreeWidgetItem(self.feature_list)
                 feature_list_header.setText(0, "Features")
+
                 try:
                     my_exec(open(self.run_file).read(), globals())
-                    
-                    
+                        
                     for sketch in sketches:
                         for wire in sketch.wires:
                             display.DisplayShape(wire.Wire(), update=True)
