@@ -17,6 +17,8 @@ from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
 from OCC.Core.Interface import Interface_Static_SetCVal
 from OCC.Core.IFSelect import IFSelect_RetDone
 
+from OCC.Core.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
+
 
 display_wires = []
 display_shapes = []
@@ -183,6 +185,15 @@ class Feature:
     def set_color(self, color):
         self.color = color
 
+    def merge_self(self):
+        '''merge extra/overlapping faces and edges due to boolean operations.
+           see https://tracker.dev.opencascade.org/view.php?id=26409 for more information
+        '''
+        temp_su = ShapeUpgrade_UnifySameDomain(self.solid.Shape())
+        temp_su.Build()
+        self.solid = temp_su
+
+
     # def sweep_profile(self, path_sketch):
 
 class Part:
@@ -250,20 +261,21 @@ tr2.extrude_profile([0, 5, 0])
 
 tr3 = Feature("combine")
 tr3.combine(track, tr2)
+tr3.merge_self()
 # wire1, edges, seg
 
 # display.DisplayShape(track.solid.Shape(), update=True)
 # display_wires.append(tb_sketch.wires[0])
 # display_shapes.append(track.solid.Shape())
 
-sketches.append(tb_sketch)
+#sketches.append(tb_sketch)
 #features.append(track)
 #features.append(tr2)
 features.append(tr3)
 
 # # initialize the STEP exporter
 # step_writer = STEPControl_Writer()
-# Interface_Static_SetCVal("write.step.schema", "AP203")
+# Interface_Static_SetCVal("write.step.schema", "AP214")
 
 # # transfer shapes and write file
 # step_writer.Transfer(tr3.solid.Shape(), STEPControl_AsIs)
@@ -271,3 +283,4 @@ features.append(tr3)
 
 # if status != IFSelect_RetDone:
 # 	raise AssertionError("load failed")
+print("eof")
