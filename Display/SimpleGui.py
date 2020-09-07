@@ -282,7 +282,7 @@ def init_display(backend_str=None,
                             sketch_list_item.setText(0, sketch.name)
                             
                     for feature in features:
-                        display.DisplayShape(feature.solid.Shape(), update=True)
+                        display.DisplayShape(feature.solid.Shape(), update=True, color = feature.color)
                         feature_list_item = QtWidgets.QTreeWidgetItem(feature_list_header)
                         feature_list_item.setText(0, feature.name)
                 except:
