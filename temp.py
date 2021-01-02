@@ -153,13 +153,9 @@ class SketchEntity_OCC:
         # https://dev.opencascade.org/doc/refman/html/class_g_c___make_arc_of_circle.html
         
         if len(self.points_2d) > 3:
-            print("build circle first")
-            print(self.points_3d)
             # build arc by building circle first
             temp_circle_axis = gp_Ax2(self.points_3d[0], self.coordinate_system.Direction())
             temp_circle = gp_Circ(temp_circle_axis, self.points_2d[1][0])
-
-            print([temp_circle, self.points_3d[2], self.points_3d[3], True])
             
             return GC_MakeArcOfCircle(temp_circle, self.points_3d[2], self.points_3d[3], True)
         else:
@@ -175,14 +171,15 @@ class SketchEntity_OCC:
             https://dev.opencascade.org/doc/refman/html/class_g_c___make_arc_of_ellipse.html
         '''
         
-        temp_ellipse = self.build_ellipse()
+        temp_ellipse = self.build_ellipse().Value() # this is a Geom_Ellipse
         
-        return GC_MakeArcOfEllipse(temp_ellipse, self.points_3d[3], self.points_3d[4], True)
+        return GC_MakeArcOfEllipse(temp_ellipse.Elips(), self.points_3d[3], self.points_3d[4], True)
     
     
     def build_circle(self):
         # the points used to build a circle, the first point is the center of circle, second point the first value is used for circle radius
-        return GC_MakeCircle(self.points_3d[0], self.points_2d[1][0])
+        temp_circle_axis = gp_Ax2(self.points_3d[0], self.coordinate_system.Direction())
+        return GC_MakeCircle(temp_circle_axis, self.points_2d[1][0])
     
     def build_ellipse(self):
         ''' Build an ellipse from the points provided.  First we need to build the appropriate axis for the ellipse and then actually build the ellipse.
