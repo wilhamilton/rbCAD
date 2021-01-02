@@ -1,6 +1,6 @@
 
 
-from OCC.Core.gp import gp_Pnt, gp_Dir, gp_Vec, gp_Ax1, gp_Ax2, gp_Ax3, gp_Trsf, gp
+from OCC.Core.gp import gp_Pnt, gp_Dir, gp_Vec, gp_Ax1, gp_Ax2, gp_Ax3, gp_Trsf, gp, gp_Circ
 from OCC.Core.GC import GC_MakeArcOfCircle, GC_MakeSegment, GC_MakeArcOfEllipse, GC_MakeCircle, GC_MakeEllipse
 from OCC.Core.GeomAPI import GeomAPI_PointsToBSpline
 from OCC.Core.TColgp import TColgp_Array1OfPnt
@@ -153,10 +153,15 @@ class SketchEntity_OCC:
         # https://dev.opencascade.org/doc/refman/html/class_g_c___make_arc_of_circle.html
         
         if len(self.points_2d) > 3:
+            print("build circle first")
+            print(self.points_3d)
             # build arc by building circle first
-            temp_circle = GC_MakeCircle(self.points_3d[0], self.points_2d[1][0])
+            temp_circle_axis = gp_Ax2(self.points_3d[0], self.coordinate_system.Direction())
+            temp_circle = gp_Circ(temp_circle_axis, self.points_2d[1][0])
+
+            print([temp_circle, self.points_3d[2], self.points_3d[3], True])
             
-            return GC_MakeArcOfCircle(temp_circle, self.points_3d[2], self.points_3d[3])
+            return GC_MakeArcOfCircle(temp_circle, self.points_3d[2], self.points_3d[3], True)
         else:
             # build an arc by using 3 points
             
@@ -451,7 +456,7 @@ test_sketch.make_wire_from_edges()
 # test_feature.extrude_profile(10)
 
 
-plane_origin2 = gp_Pnt(0, 0, 20)
+plane_origin2 = gp_Pnt(0, 10, 0)
 plane_normal2 = gp.DY()#gp_Dir(0, 1, 0)
 # plane_major_axis = gp_Dir(0, 1, 0)
 
@@ -464,12 +469,19 @@ def point_to_string(point):
 
 test_sketch2 = Sketch("second test sketch", is_2d = True, coordinate_system=coordinate_system2)
 
-m = [0, 0]
-n = [10, 0]
-o = [10, 10]
-p = [0, 10]
+m = [5, 10]
+n = [0, 10]
+o = [0, 0]
+p = [10, 0]
+q = [10, 5]
 
-test_sketch2.make_segments_from_points([m, n, o, p])
+r = [5, 5]
+
+test_sketch2.make_segments_from_points([m, n, o, p, q])
+test_sketch2.entities.pop()
+
+test_arc = SketchEntity([r, r, q, m], type="arc")
+test_sketch2.add_entity(test_arc)
 test_sketch2.make_edges_from_entities()
 test_sketch2.make_wire_from_edges()
 
