@@ -1,6 +1,6 @@
 
 
-from OCC.Core.gp import gp_Pnt, gp_Dir, gp_Vec, gp_Ax1, gp_Ax2, gp_Ax3, gp_Trsf
+from OCC.Core.gp import gp_Pnt, gp_Dir, gp_Vec, gp_Ax1, gp_Ax2, gp_Ax3, gp_Trsf, gp
 from OCC.Core.GC import GC_MakeArcOfCircle, GC_MakeSegment, GC_MakeArcOfEllipse, GC_MakeCircle, GC_MakeEllipse
 from OCC.Core.GeomAPI import GeomAPI_PointsToBSpline
 from OCC.Core.TColgp import TColgp_Array1OfPnt
@@ -23,36 +23,6 @@ display_shapes = []
 
 sketches = []
 features = []
-
-# def make_wire_from_points(list_of_points):
-    # points = []
-    # segments = []
-    # edges = []
-    
-    # wire_builder = BRepBuilderAPI_MakeWire()
-    
-    # #make points from list of points
-    # for temp_point in list_of_points:
-        # # print(temp_point)
-        # points.append(gp_Pnt(temp_point[0], temp_point[1], temp_point[2]))
-        
-    # #make segments from points
-    # for i in range(len(points)):
-        # #print(str(i) + ": making segment between")
-        # # print(len(points))
-        # if(i == len(points)-1):
-            # segments.append(GC_MakeSegment(points[i], points[0]))
-        # else:
-            # segments.append(GC_MakeSegment(points[i], points[i+1]))
-
-    # #make edges from segments
-    # for temp_segment in segments:
-        # temp_edge = BRepBuilderAPI_MakeEdge(temp_segment.Value())
-        # edges.append(temp_edge)
-        # wire_builder.Add(temp_edge.Edge())
-    
-    # return wire_builder, edges, segments, points
-    
     
 def rbcad_init(backend="occ"):
     '''Set all of the functions to be used based on the backends.'''
@@ -137,11 +107,15 @@ class SketchEntity_OCC:
             self.build_points_3d_from_2d()
             
         transform_object = gp_Trsf()
-        transform_object.SetTransformation(self.coordinate_system)
+        transform_object.SetTransformation(self.coordinate_system, gp_Ax3(gp.XOY()))
+
+        # print(point_to_string(self.coordinate_system.Direction()))
             
         for point in self.points_3d:
             #do transform on point by point basis
+            # print("before: ", point_to_string(point))
             point.Transform(transform_object)
+            # print("after: ", point_to_string(point))
             
     def build_points_3d_from_2d(self, points_list=None):
         ''' Converts all of the 2D points for the sketch entity (x, y) into a 3D point (x, y, z).
@@ -254,9 +228,9 @@ class Sketch_OCC:
             # build a transform that is the origin (centered at 0,0,0, normal is z-axis, major axis is x-axis
             plane_origin = gp_Pnt(0, 0, 0)
             plane_normal = gp_Dir(0, 0, 1)
-            plane_major_axis = gp_Dir(1, 0, 0)
+            # plane_major_axis = gp_Dir(1, 0, 0)
             
-            coordinate_system = gp_Ax3(gp_Ax2(plane_origin, plane_normal, plane_major_axis))
+            coordinate_system = gp_Ax3(gp_Ax2(plane_origin, plane_normal))
             # plane_transform = gp_Trsf()
             # plane_transform.SetTransformation(plane_transform_coordinate_system)
             
@@ -471,75 +445,39 @@ test_sketch.make_segments_from_points([a, b, c, d])
 test_sketch.make_edges_from_entities()
 test_sketch.make_wire_from_edges()
 
-test_feature = Feature('track')
-test_feature.add_profile_sketch(test_sketch)
-test_feature.build_face()
-test_feature.extrude_profile(10)
-
-'''
-tb_bottom_left = gp_Pnt(-track_bed_width/2, 0, 0)
-tb_bottom_right = gp_Pnt(track_bed_width/2, 0, 0)
-
-a = [-track_bed_width/2, 0, 0]
-b = [track_bed_width/2, 0, 0]
-c = [track_bed_top_width/2, 0, track_bed_height]
-d = [-track_bed_top_width/2, 0, track_bed_height]
-
-tb_sketch = Sketch("tb")
-
-tb_sketch.make_wire_from_points([a, b, c, d])
-
-tb_sketch.print_points()
-
-track = Feature('track')
-
-track.add_profile_sketch(tb_sketch)
-track.extrude_profile([0, 10, 0])
-
-def build_axis(base_point, direction):
-    base_point = gp_Pnt(base_point[0], base_point[1], base_point[2])
-    direction = gp_Dir(direction[0], direction[1], direction[2])
-
-    return gp_Ax1(base_point, direction)
-
-rev_axis = build_axis([50, 0, 0], [0, 0, 1])
-print(rev_axis)
-# track.revolve_profile(rev_axis)
-#track.set_color("BLUE")
-
-def fake_rgb(red_value, green_value, blue_value):
-    red_value = red_value / 255
-    green_value = green_value / 255
-    blue_value = blue_value / 255
-    return rgb_color(red_value, green_value, blue_value)
-
-#track.set_color(fake_rgb(20, 20, 20))
+# test_feature = Feature('track')
+# test_feature.add_profile_sketch(test_sketch)
+# test_feature.build_face()
+# test_feature.extrude_profile(10)
 
 
-tb_sketch2 = Sketch("tb2")
-a2 = [-track_bed_width/4, 0, 0]
-b2 = [track_bed_width/4, 0, 0]
-c2 = [track_bed_top_width/4, 0, 2*track_bed_height]
-d2 = [-track_bed_top_width/4, 0, 2*track_bed_height]
-tb_sketch2.make_wire_from_points([a2, b2, c2, d2])
+plane_origin2 = gp_Pnt(0, 0, 20)
+plane_normal2 = gp.DY()#gp_Dir(0, 1, 0)
+# plane_major_axis = gp_Dir(0, 1, 0)
 
-tr2 = Feature("track2")
-tr2.add_profile_sketch(tb_sketch2)
-tr2.extrude_profile([0, 5, 0])
+coordinate_system2 = gp_Ax3(gp_Ax2(plane_origin2, plane_normal2))
 
+def point_to_string(point):
+    return str(point.X()) + ", " + str(point.Y()) + ", " + str(point.Z()) 
 
-tr3 = Feature("combine")
-tr3.combine(track, tr2)
-# wire1, edges, seg
+# print("coordinate system 2 location: ", point_to_string(coordinate_system2.Location()))
 
-# display.DisplayShape(track.solid.Shape(), update=True)
-# display_wires.append(tb_sketch.wires[0])
-# display_shapes.append(track.solid.Shape())
-'''
+test_sketch2 = Sketch("second test sketch", is_2d = True, coordinate_system=coordinate_system2)
+
+m = [0, 0]
+n = [10, 0]
+o = [10, 10]
+p = [0, 10]
+
+test_sketch2.make_segments_from_points([m, n, o, p])
+test_sketch2.make_edges_from_entities()
+test_sketch2.make_wire_from_edges()
+
 sketches.append(test_sketch)
+sketches.append(test_sketch2)
 #features.append(track)
 #features.append(tr2)
-features.append(test_feature)
+# features.append(test_feature)
 
 # # initialize the STEP exporter
 # step_writer = STEPControl_Writer()
