@@ -356,6 +356,7 @@ class Feature_OCC:
         self.color = None
         
         self.path_sketch = None
+        self.end_face_coordinate_system = None
 
     def add_profile_sketch(self, sketch):
         self.profile_sketch = sketch
@@ -392,15 +393,26 @@ class Feature_OCC:
         
         self.solid = BRepPrimAPI_MakePrism(self.profile_face.Face(), vector)
         print(self.solid)
+        self.build_end_face_coordinate_system()
+
+    def build_end_face_coordinate_system(self):
+        print("building end face coordinate system")
+        self.end_face_coordinate_system = gp_Ax3(gp.XOY())
+        temp_last_shape = self.solid.LastShape()
+        temp_end_coordinate_system_location = temp_last_shape.Location()
+        temp_end_coordinate_system_transform = temp_end_coordinate_system_location.Transformation()
+
+        self.end_face_coordinate_system.Transform(temp_end_coordinate_system_transform)
 
     def revolve_profile(self, revolve_axis, angle = 360):
         self.revolve_axis = revolve_axis
-        self.revolve_angle = 3.14159*2
+        self.revolve_angle = 3.14159/3
 
         print(self.revolve_axis)
         print(self.revolve_angle)
 
         self.solid  = BRepPrimAPI_MakeRevol(self.profile_face.Face(), self.revolve_axis, self.revolve_angle, False)
+        self.build_end_face_coordinate_system()
 
     def combine(self, featureA, featureB):
         print('combining A and B')
@@ -429,6 +441,33 @@ class Part:
 
     def add_feature(self, feature):
         self.features.append(feature)
+
+def build_coordinate_system(plane="XY", offset=None, rotation_axis=None, angle=None):
+    ''' Build a coordinate system (ax3) off of the 3 major planes.  New plane can be offset, or at an angle.
+
+        If the plane is going to be rotated and offset, the rotation occurs first.
+
+        https://dev.opencascade.org/doc/refman/html/classgp.html
+    '''
+    if plane is "XY":
+        starting_axis = gp.XOY()
+    elif plane is "YZ":
+        starting_axis = gp.YOZ()
+    elif plane is "ZX":
+        starting_axis = gp.ZOX()
+    else:
+        return None
+
+    if rotation_axis is not None:
+        # perform a rotation about the provided axis
+        print("rotating plane")
+    
+    if offset is not None:
+        translation_vector = gp_Vec(starting_axis.Direction())
+        translation_vector.Scale(offset)
+        starting_axis.Translate(translation_vector)
+
+    return gp_Ax3(starting_axis)
         
 Feature, Sketch, SketchEntity = rbcad_init("occ")
 
@@ -447,17 +486,22 @@ test_sketch.make_segments_from_points([a, b, c, d])
 test_sketch.make_edges_from_entities()
 test_sketch.make_wire_from_edges()
 
-# test_feature = Feature('track')
-# test_feature.add_profile_sketch(test_sketch)
-# test_feature.build_face()
+test_feature = Feature('track')
+test_feature.add_profile_sketch(test_sketch)
+test_feature.build_face()
 # test_feature.extrude_profile(10)
-
+test_feature.revolve_profile(gp.OX(), 90)
 
 plane_origin2 = gp_Pnt(0, 10, 0)
 plane_normal2 = gp.DY()#gp_Dir(0, 1, 0)
 # plane_major_axis = gp_Dir(0, 1, 0)
 
-coordinate_system2 = gp_Ax3(gp_Ax2(plane_origin2, plane_normal2))
+# coordinate_system2 = gp_Ax3(gp_Ax2(plane_origin2, plane_normal2))
+
+#coordinate_system2 = test_feature.end_face_coordinate_system
+
+coordinate_system2 = build_coordinate_system(offset=20)
+
 
 def point_to_string(point):
     return str(point.X()) + ", " + str(point.Y()) + ", " + str(point.Z()) 
@@ -482,11 +526,17 @@ test_sketch2.add_entity(test_arc)
 test_sketch2.make_edges_from_entities()
 test_sketch2.make_wire_from_edges()
 
+test_feature2 = Feature("test2")
+test_feature2.add_profile_sketch(test_sketch2)
+test_feature2.build_face()
+test_feature2.extrude_profile(20)
+
 sketches.append(test_sketch)
 sketches.append(test_sketch2)
 #features.append(track)
 #features.append(tr2)
-# features.append(test_feature)
+features.append(test_feature)
+features.append(test_feature2)
 
 # # initialize the STEP exporter
 # step_writer = STEPControl_Writer()
