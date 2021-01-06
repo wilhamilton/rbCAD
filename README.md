@@ -11,7 +11,7 @@ The software, as of v0.1 is not much more than a few functions built on top of P
 # Roadmap
 Feature/prioty list as of 2021-01-03:
 - Modeling: helper functions to build axis for revolves
-- Modeling: allow for multiple wires to be used in face creation to create face with "holes"
+- ~Modeling: allow for multiple wires to be used in face creation to create face with "holes"~
 - Modeling: patterns/arrays/mirrors/copies, etc.
 - GUI: toggle views on/off
 - GUI: implement 1 button mode for zoom/rotate/pan for trackpad (no scroll wheel) usage

@@ -294,14 +294,22 @@ class Sketch_OCC:
             # print(pnt.Coord())
 
     def make_segments_from_points(self, points):
+
+        new_entities = []
+
         for i in range(len(points)):
             # #print(str(i) + ": making segment between")
             # # print(len(points))
             if(i == len(points)-1):
-                self.entities.append(SketchEntity_OCC([points[i], points[0]]))
+                new_entity = SketchEntity_OCC([points[i], points[0]])
+                self.entities.append(new_entity)
+                
             else:
-                self.entities.append(SketchEntity_OCC([points[i], points[i+1]]))
+                new_entity = SketchEntity_OCC([points[i], points[i+1]])
+                self.entities.append(new_entity)
                 # self.entities.append(GC_MakeSegment(self.points[i], self.points[i+1]))
+            new_entities.append(new_entity)
+        return new_entities
 
     # def make_edges_from_segments(self):
         # for segment in self.entities:
@@ -319,6 +327,8 @@ class Sketch_OCC:
                 wire_builder.Add(edge.Edge())
 
         self.wires.append(wire_builder)
+
+        return wire_builder
 
     # def make_wire_from_points(self, points):
         # self.add_points(points)
@@ -339,12 +349,17 @@ class Sketch_OCC:
         if entity_list is None:
             entity_list = self.entities
 
+        new_edges = []
+
         for entity in entity_list:
             
             built_entity = entity.build_entity(self.coordinate_system)
             
             new_edge = BRepBuilderAPI_MakeEdge(built_entity.Value())
             self.edges.append(new_edge)
+            new_edges.append(new_edge)
+
+        return new_edges
             
 
 class Feature_OCC:
@@ -378,7 +393,10 @@ class Feature_OCC:
         self.profile_face = BRepBuilderAPI_MakeFace(profile_wire_builder.Wire())
         
         for hole_wire_builder in wire_builder_list:
-            self.profile_face.Add(hole_wire_builder.Wire())
+            print("adding holes")
+            hole_wire = hole_wire_builder.Wire()
+            hole_wire.Reverse()
+            self.profile_face.Add(hole_wire)
         
     def extrude_profile(self, extrude_vector):
         if type(extrude_vector) is int or type(extrude_vector) is float:
@@ -473,7 +491,7 @@ Feature, Sketch, SketchEntity = rbcad_init("occ")
 
 track_bed_width = 16
 track_bed_top_width = 11
-track_bed_height = 5
+track_bed_height = 8
 
 test_sketch = Sketch("test sketch", is_2d = True)
 
@@ -482,15 +500,33 @@ b = [track_bed_width/2, 0]
 c = [track_bed_top_width/2, track_bed_height]
 d = [-track_bed_top_width/2, track_bed_height]
 
+e = [-4, 1]
+f = [4, 1]
+g = [4, 2]
+h = [-4, 2]
+
+e2 = [-4, 4]
+f2 = [4, 4]
+g2 = [4, 5]
+h2 = [-4, 5]
+
 test_sketch.make_segments_from_points([a, b, c, d])
 test_sketch.make_edges_from_entities()
 test_sketch.make_wire_from_edges()
 
+hole_entities = test_sketch.make_segments_from_points([e, f, g, h])
+hole_edges = test_sketch.make_edges_from_entities(hole_entities)
+test_sketch.make_wire_from_edges(hole_edges)
+
+hole_entities2 = test_sketch.make_segments_from_points([e2, f2, g2, h2])
+hole_edges2 = test_sketch.make_edges_from_entities(hole_entities2)
+test_sketch.make_wire_from_edges(hole_edges2)
+
 test_feature = Feature('track')
 test_feature.add_profile_sketch(test_sketch)
 test_feature.build_face()
-# test_feature.extrude_profile(10)
-test_feature.revolve_profile(gp.OX(), 90)
+test_feature.extrude_profile(2)
+# test_feature.revolve_profile(gp.OX(), 90)
 
 plane_origin2 = gp_Pnt(0, 10, 0)
 plane_normal2 = gp.DY()#gp_Dir(0, 1, 0)
