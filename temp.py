@@ -395,7 +395,7 @@ class Feature_OCC:
         for hole_wire_builder in wire_builder_list:
             print("adding holes")
             hole_wire = hole_wire_builder.Wire()
-            hole_wire.Reverse()
+            hole_wire.Reverse() # wire direction needs to be reversed for holes to work properly
             self.profile_face.Add(hole_wire)
         
     def extrude_profile(self, extrude_vector):
@@ -459,6 +459,20 @@ class Part:
 
     def add_feature(self, feature):
         self.features.append(feature)
+
+def build_offset_axis(direction="Z", location=[0,0,0]):
+    if direction is "Z":
+        direction_vector = gp.DZ()
+    elif direction is "X":
+        direction_vector = gp.DX()
+    elif direction is "Y":
+        direction_vector = gp.DY()
+    else:
+        return None
+
+    axis_location = gp_Pnt(location[0], location[1], location[2])
+
+    return gp_Ax1(axis_location, direction_vector)
 
 def build_coordinate_system(plane="XY", offset=None, rotation_axis=None, angle=None):
     ''' Build a coordinate system (ax3) off of the 3 major planes.  New plane can be offset, or at an angle.
@@ -525,8 +539,8 @@ test_sketch.make_wire_from_edges(hole_edges2)
 test_feature = Feature('track')
 test_feature.add_profile_sketch(test_sketch)
 test_feature.build_face()
-test_feature.extrude_profile(2)
-# test_feature.revolve_profile(gp.OX(), 90)
+#test_feature.extrude_profile(2)
+test_feature.revolve_profile(build_offset_axis("Y", [-20, 0, 0]), 90)
 
 plane_origin2 = gp_Pnt(0, 10, 0)
 plane_normal2 = gp.DY()#gp_Dir(0, 1, 0)

@@ -9,9 +9,10 @@ https://www.opencascade.com/
 The software, as of v0.1 is not much more than a few functions built on top of Python OCC to meet my needs as a simple CAD editor in the style of OpenSCAD.  As development continues I will refine the GUI and add more "helper" functions to expose more functionality.
 
 # Roadmap
-Feature/prioty list as of 2021-01-03:
-- Modeling: helper functions to build axis for revolves
+Feature/prioty list as of 2021-01-05:
+- ~Modeling: helper functions to build axis for revolves~
 - ~Modeling: allow for multiple wires to be used in face creation to create face with "holes"~
+- Modeling: sweep face/profile along a path
 - Modeling: patterns/arrays/mirrors/copies, etc.
 - GUI: toggle views on/off
 - GUI: implement 1 button mode for zoom/rotate/pan for trackpad (no scroll wheel) usage
