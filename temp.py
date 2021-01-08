@@ -391,14 +391,18 @@ class Feature_OCC:
         profile_wire_builder = wire_builder_list.pop(0)
         print(profile_wire_builder)
         self.profile_face = BRepBuilderAPI_MakeFace(profile_wire_builder.Wire())
-        
+
+        print(wire_builder_list)
+
         for hole_wire_builder in wire_builder_list:
             print("adding holes")
             hole_wire = hole_wire_builder.Wire()
             hole_wire.Reverse() # wire direction needs to be reversed for holes to work properly
             self.profile_face.Add(hole_wire)
+        print("done building face")
         
     def extrude_profile(self, extrude_vector):
+        print("extruding profile")
         if type(extrude_vector) is int or type(extrude_vector) is float:
             # get the normal axis for the face sketch and use that for the direction
             sketch_normal = self.profile_sketch.coordinate_system.Direction()
@@ -432,6 +436,17 @@ class Feature_OCC:
         self.solid  = BRepPrimAPI_MakeRevol(self.profile_face.Face(), self.revolve_axis, self.revolve_angle, False)
         self.build_end_face_coordinate_system()
 
+    def sweep_profile(self, path_wire = None):
+        ''' Sweep the sketch face along a path
+            https://dev.opencascade.org/doc/refman/html/class_b_rep_offset_a_p_i___make_pipe.html
+        '''
+
+        if path_wire is None:
+            # only the 'first' wire in the path_sketch can be used as the path for the sweep
+            path_wire = self.path_sketch.wires[0]
+
+        self.solid = BRepOffsetAPI_MakePipe(path_wire.Wire(), self.profile_face.Face())
+
     def combine(self, featureA, featureB):
         print('combining A and B')
         self.solid = BRepAlgoAPI_Fuse(featureA.solid.Shape(), featureB.solid.Shape())
@@ -461,6 +476,9 @@ class Part:
         self.features.append(feature)
 
 def build_offset_axis(direction="Z", location=[0,0,0]):
+    ''' Build a new axis that is parallel to one of the three major axis (X, Y, Z).  The axis is based at the location point provided.
+
+    '''
     if direction is "Z":
         direction_vector = gp.DZ()
     elif direction is "X":
@@ -528,19 +546,19 @@ test_sketch.make_segments_from_points([a, b, c, d])
 test_sketch.make_edges_from_entities()
 test_sketch.make_wire_from_edges()
 
-hole_entities = test_sketch.make_segments_from_points([e, f, g, h])
-hole_edges = test_sketch.make_edges_from_entities(hole_entities)
-test_sketch.make_wire_from_edges(hole_edges)
+# hole_entities = test_sketch.make_segments_from_points([e, f, g, h])
+# hole_edges = test_sketch.make_edges_from_entities(hole_entities)
+# test_sketch.make_wire_from_edges(hole_edges)
 
-hole_entities2 = test_sketch.make_segments_from_points([e2, f2, g2, h2])
-hole_edges2 = test_sketch.make_edges_from_entities(hole_entities2)
-test_sketch.make_wire_from_edges(hole_edges2)
+# hole_entities2 = test_sketch.make_segments_from_points([e2, f2, g2, h2])
+# hole_edges2 = test_sketch.make_edges_from_entities(hole_entities2)
+# test_sketch.make_wire_from_edges(hole_edges2)
 
 test_feature = Feature('track')
 test_feature.add_profile_sketch(test_sketch)
 test_feature.build_face()
-#test_feature.extrude_profile(2)
-test_feature.revolve_profile(build_offset_axis("Y", [-20, 0, 0]), 90)
+# test_feature.extrude_profile(2)
+# test_feature.revolve_profile(build_offset_axis("Y", [-20, 0, 0]), 90)
 
 plane_origin2 = gp_Pnt(0, 10, 0)
 plane_normal2 = gp.DY()#gp_Dir(0, 1, 0)
@@ -550,7 +568,7 @@ plane_normal2 = gp.DY()#gp_Dir(0, 1, 0)
 
 #coordinate_system2 = test_feature.end_face_coordinate_system
 
-coordinate_system2 = build_coordinate_system(offset=20)
+coordinate_system2 = build_coordinate_system(plane="ZX")
 
 
 def point_to_string(point):
@@ -560,33 +578,39 @@ def point_to_string(point):
 
 test_sketch2 = Sketch("second test sketch", is_2d = True, coordinate_system=coordinate_system2)
 
-m = [5, 10]
-n = [0, 10]
-o = [0, 0]
-p = [10, 0]
-q = [10, 5]
+# m = [5, 10]
+# n = [0, 10]
+# o = [0, 0]
+# p = [10, 0]
+# q = [10, 5]
+m = [0, 0]
+n = [10, 0]
+o = [20, 5]
 
 r = [5, 5]
 
-test_sketch2.make_segments_from_points([m, n, o, p, q])
+test_sketch2.make_segments_from_points([m, n, o])
 test_sketch2.entities.pop()
 
-test_arc = SketchEntity([r, r, q, m], type="arc")
-test_sketch2.add_entity(test_arc)
+# test_arc = SketchEntity([r, r, q, m], type="arc")
+# test_sketch2.add_entity(test_arc)
 test_sketch2.make_edges_from_entities()
 test_sketch2.make_wire_from_edges()
 
-test_feature2 = Feature("test2")
-test_feature2.add_profile_sketch(test_sketch2)
-test_feature2.build_face()
-test_feature2.extrude_profile(20)
+# test_feature2 = Feature("test2")
+# test_feature2.add_profile_sketch(test_sketch2)
+# test_feature2.build_face()
+# test_feature2.extrude_profile(20)
 
 sketches.append(test_sketch)
 sketches.append(test_sketch2)
 #features.append(track)
 #features.append(tr2)
+
+test_feature.sweep_profile(test_sketch2.wires[0])
+
 features.append(test_feature)
-features.append(test_feature2)
+# features.append(test_feature2)
 
 # # initialize the STEP exporter
 # step_writer = STEPControl_Writer()
