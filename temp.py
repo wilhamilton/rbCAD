@@ -267,13 +267,13 @@ class Sketch_OCC:
         self.coordinate_system.Transform(translation)
         
 
-    def rotate_sketch(self, rotation, angle = None):
-        print('rotate the sketch')
+    # def rotate_sketch(self, rotation, angle = None):
+    #     print('rotate the sketch')
 
-        if angle is None:
-            print('Using provided rotation matrix')
-        else:
-            print('Using provided axis and angle for rotation')
+    #     if angle is None:
+    #         print('Using provided rotation matrix')
+    #     else:
+    #         print('Using provided axis and angle for rotation')
 
 
     def add_meta(self, key, value):
