@@ -17,6 +17,8 @@ from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
 from OCC.Core.Interface import Interface_Static_SetCVal
 from OCC.Core.IFSelect import IFSelect_RetDone
 
+import math
+
 
 display_wires = []
 display_shapes = []
@@ -402,6 +404,11 @@ class Feature_OCC:
         print("done building face")
         
     def extrude_profile(self, extrude_vector):
+        ''' Extrude the profile defined by the face sketch along a provided vector.  The vector provided can be a true 
+            vector (direction and magnitude) or a scalar (direction is calculated to be sketch plane normal).
+
+            https://dev.opencascade.org/doc/refman/html/class_b_rep_prim_a_p_i___make_prism.html
+        '''
         print("extruding profile")
         if type(extrude_vector) is int or type(extrude_vector) is float:
             # get the normal axis for the face sketch and use that for the direction
@@ -418,17 +425,30 @@ class Feature_OCC:
         self.build_end_face_coordinate_system()
 
     def build_end_face_coordinate_system(self):
+        ''' Get the coordinate system of the end face of a feature (extrude, revolve, sweep).  
+
+            We first get the shape of the last face, then the location of that face, and finally the transformation to that face.
+            That transformation is then applied to the XY plane (default) coordinate system.
+
+            https://dev.opencascade.org/doc/refman/html/class_b_rep_prim_a_p_i___make_prism.html#a7d5c77d31460244f89d5f7fce25eb5af
+            https://dev.opencascade.org/doc/refman/html/class_topo_d_s___shape.html
+            https://dev.opencascade.org/doc/refman/html/class_top_loc___location.html
+        '''
         print("building end face coordinate system")
         self.end_face_coordinate_system = gp_Ax3(gp.XOY())
-        temp_last_shape = self.solid.LastShape()
-        temp_end_coordinate_system_location = temp_last_shape.Location()
-        temp_end_coordinate_system_transform = temp_end_coordinate_system_location.Transformation()
+        temp_last_shape = self.solid.LastShape()    # TopoDS_Shape
+        temp_end_coordinate_system_location = temp_last_shape.Location() # TopLoc_Location
+        temp_end_coordinate_system_transform = temp_end_coordinate_system_location.Transformation() # gp_Trsf
 
         self.end_face_coordinate_system.Transform(temp_end_coordinate_system_transform)
 
     def revolve_profile(self, revolve_axis, angle = 360):
+        ''' Revolve the profile sketch around the provided revolve axis.
+
+            https://dev.opencascade.org/doc/refman/html/class_b_rep_prim_a_p_i___make_revol.html
+        '''
         self.revolve_axis = revolve_axis
-        self.revolve_angle = 3.14159/3
+        self.revolve_angle = math.radians(angle)
 
         print(self.revolve_axis)
         print(self.revolve_angle)
@@ -437,7 +457,8 @@ class Feature_OCC:
         self.build_end_face_coordinate_system()
 
     def sweep_profile(self, path_wire = None):
-        ''' Sweep the sketch face along a path
+        ''' Sweep the sketch face along a path.
+
             https://dev.opencascade.org/doc/refman/html/class_b_rep_offset_a_p_i___make_pipe.html
         '''
 
@@ -558,7 +579,7 @@ test_feature = Feature('track')
 test_feature.add_profile_sketch(test_sketch)
 test_feature.build_face()
 # test_feature.extrude_profile(2)
-# test_feature.revolve_profile(build_offset_axis("Y", [-20, 0, 0]), 90)
+test_feature.revolve_profile(build_offset_axis("Y", [-20, 0, 0]), 90)
 
 plane_origin2 = gp_Pnt(0, 10, 0)
 plane_normal2 = gp.DY()#gp_Dir(0, 1, 0)
@@ -607,7 +628,7 @@ sketches.append(test_sketch2)
 #features.append(track)
 #features.append(tr2)
 
-test_feature.sweep_profile(test_sketch2.wires[0])
+# test_feature.sweep_profile(test_sketch2.wires[0])
 
 features.append(test_feature)
 # features.append(test_feature2)

@@ -9,39 +9,40 @@ https://www.opencascade.com/
 The software, as of v0.1 is not much more than a few functions built on top of Python OCC to meet my needs as a simple CAD editor in the style of OpenSCAD.  As development continues I will refine the GUI and add more "helper" functions to expose more functionality.
 
 # Roadmap
-Feature/prioty list as of 2021-01-05:
+Development roadmap as of 2021-01-08:
 
 v0.2
 - ~Modeling: helper functions to build axis for revolves~
 - ~Modeling: allow for multiple wires to be used in face creation to create face with "holes"~
-- Modeling: sweep face/profile along a path
+- ~Modeling: sweep face/profile along a path~
 
 v0.3
 - Modeling: patterns/arrays/mirrors/copies, etc.
 - Quality: Refactor of functions into seperate files
 
 v0.4
-- Assemblies: Anchor points for relative part location
+- Modeling: Lofting
 
 v0.5
-- GUI: decouple added features from demo-gui from pyocc
+- Assemblies: Anchor points for relative part location
 
 v0.6
+- GUI: decouple added features from demo-gui from pyocc
+
+v0.7
 - GUI: toggle views on/off
 - GUI: implement 1 button mode for zoom/rotate/pan for trackpad (no scroll wheel) usage
 - GUI: more verbose debugging options/outputs from test script
 
-v0.7
+v0.8
 - Special features: aka hole wizard type feature creation
 
-v0.8
+v0.9
 - Backend: Implement OpenSCAD as an alternative backend
 
-v0.9
+v1.0
 - Backend: Implement JSON/YAML file types for storing files and engine to parse them
 
-v1.0
-- Examples/Tutorials
 
 # Known Bugs
 Known bugs on the master/dev branch.
