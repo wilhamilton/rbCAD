@@ -18,7 +18,7 @@ v0.2
 
 v0.3
 - Modeling: patterns/arrays/mirrors/copies, etc.
-- Quality: Refactor of functions into seperate files
+- ~Quality: Refactor of functions into seperate files~
 
 v0.4
 - Modeling: Lofting
